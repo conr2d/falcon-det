@@ -1,0 +1,21 @@
+[package]
+name = "falcon-det"
+version = "0.1.0"
+description = "Deterministic Falcon post-quantum signature scheme"
+authors = ["Jeeyong Um <conr2d@proton.me>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/conr2d/falcon-det.git"
+documentation = "https://docs.rs/falcon-det"
+
+[dependencies]
+falcon-det-sys = { version = "0.1", path = "sys" }
+signature = { version = "2.2", optional = true }
+static_assertions = "1.1"
+zeroize = { version = "1.8", features = ["derive"], optional = true }
+
+[features]
+default = ["signature", "zeroize"]
+
+[workspace]
+members = ["sys"]
