@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../falcon.h"
-#include "../deterministic.h"
+#include "falcon.h"
+#include "deterministic.h"
 #include "test_deterministic_kat.h"
 
 // number of KATs for compressed format
