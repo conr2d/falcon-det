@@ -1,0 +1,13 @@
+[package]
+name = "falcon-det-sys"
+version = "0.1.0"
+description = "Bindings for the Falcon C implementation"
+authors = ["Jeeyong Um <conr2d@proton.me>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/conr2d/falcon-det.git"
+documentation = "https://docs.rs/falcon-det-sys"
+
+[build-dependencies]
+bindgen = "0.71"
+cmake = "0.1"
