@@ -7,6 +7,9 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/conr2d/falcon-det.git"
 documentation = "https://docs.rs/falcon-det"
+keywords = ["cryptography", "falcon", "signature", "post-quantum"]
+categories = ["cryptography"]
+exclude = [".github"]
 
 [dependencies]
 const-hex = "1.14"
