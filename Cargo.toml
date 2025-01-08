@@ -9,13 +9,12 @@ repository = "https://github.com/conr2d/falcon-det.git"
 documentation = "https://docs.rs/falcon-det"
 
 [dependencies]
+const-hex = "1.14"
 falcon-det-sys = { version = "0.1", path = "sys" }
-signature = { version = "2.2", optional = true }
+signature = "2.2"
 static_assertions = "1.1"
-zeroize = { version = "1.8", features = ["derive"], optional = true }
-
-[features]
-default = ["signature", "zeroize"]
+subtle = "2.6"
+zeroize = { version = "1.8", features = ["derive"] }
 
 [workspace]
 members = ["sys"]

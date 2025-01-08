@@ -17,7 +17,7 @@
 //!
 //! ## MSRV
 //!
-//! The `falcon-det` minimum supported Rust version is **1.82.0**.
+//! The `falcon-det` minimum supported Rust version is **1.83.0**.
 
 extern crate falcon_det_sys as sys;
 

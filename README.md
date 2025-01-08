@@ -10,7 +10,7 @@ This crate provides Rust bindings to a deterministic version of
 
 ## MSRV
 
-The `falcon-det` minimum supported Rust version is **1.82.0**.
+The `falcon-det` minimum supported Rust version is **1.83.0**.
 
 ## License
 

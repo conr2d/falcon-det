@@ -88,7 +88,7 @@ impl Shake256Context {
 	/// Flip the SHAKE256 state to output mode. After this call, [`Shake256Context::inject()`]
 	/// can no longer be called on the context, but [`Shake256Context::extract()`] can be
 	/// called.
-
+	///
 	/// Flipping is one-way; a given context can be converted back to input
 	/// mode only by initializing it again, which forgets all previously
 	/// injected data.

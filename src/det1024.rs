@@ -11,6 +11,8 @@
 
 use crate::{aux::*, shake256::Shake256Context, Error};
 use static_assertions::const_assert_eq;
+use subtle::{Choice, ConstantTimeEq};
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 pub const FALCON_DET1024_LOGN: usize = 10;
 pub const FALCON_DET1024_PUBKEY_SIZE: usize = falcon_pubkey_size(FALCON_DET1024_LOGN);
@@ -49,8 +51,20 @@ pub fn generate_keypair(rng: &mut Shake256Context) -> Result<(SigningKey, Verify
 }
 
 /// Deterministic Falcon-1024 signing key.
-#[cfg_attr(feature = "zeroize", derive(zeroize::ZeroizeOnDrop))]
+#[derive(Clone, Eq, Zeroize, ZeroizeOnDrop)]
 pub struct SigningKey(pub(crate) [u8; FALCON_DET1024_PRIVKEY_SIZE]);
+
+impl PartialEq for SigningKey {
+	fn eq(&self, other: &Self) -> bool {
+		self.0.ct_eq(&other.0).unwrap_u8() == 1u8
+	}
+}
+
+impl ConstantTimeEq for SigningKey {
+	fn ct_eq(&self, other: &Self) -> Choice {
+		self.0.ct_eq(&other.0)
+	}
+}
 
 impl SigningKey {
 	/// Initialize signing key from a byte array.
@@ -128,7 +142,12 @@ impl TryFrom<&[u8]> for SigningKey {
 	}
 }
 
-#[cfg(feature = "signature")]
+impl core::fmt::Debug for SigningKey {
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+		f.debug_tuple("SigningKey").finish_non_exhaustive()
+	}
+}
+
 impl signature::Signer<Signature> for SigningKey {
 	fn try_sign(&self, msg: &[u8]) -> Result<Signature, signature::Error> {
 		Self::sign_compressed(self, msg).map_err(|_| signature::Error::new())
@@ -136,8 +155,14 @@ impl signature::Signer<Signature> for SigningKey {
 }
 
 /// Deterministic Falcon-1024 verifying key (i.e. public key).
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct VerifyingKey(pub(crate) [u8; FALCON_DET1024_PUBKEY_SIZE]);
+
+impl ConstantTimeEq for VerifyingKey {
+	fn ct_eq(&self, other: &Self) -> Choice {
+		self.0.ct_eq(&other.0)
+	}
+}
 
 impl VerifyingKey {
 	/// Initialize verifying key from a byte array.
@@ -214,10 +239,29 @@ impl TryFrom<&[u8]> for VerifyingKey {
 	}
 }
 
+impl core::fmt::Debug for VerifyingKey {
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+		f.debug_tuple("VerifyingKey").field(&const_hex::encode(self.0)).finish()
+	}
+}
+
+impl signature::Verifier<Signature> for VerifyingKey {
+	fn verify(&self, msg: &[u8], signature: &Signature) -> Result<(), signature::Error> {
+		Self::verify_compressed(self, msg, signature).map_err(|_| signature::Error::new())
+	}
+}
+
+impl signature::Verifier<CtSignature> for VerifyingKey {
+	fn verify(&self, msg: &[u8], signature: &CtSignature) -> Result<(), signature::Error> {
+		Self::verify_ct(self, msg, signature).map_err(|_| signature::Error::new())
+	}
+}
+
 /// Deterministic Falcon-1024 compressed signature (variable-length).
 #[derive(Clone, Eq, PartialEq)]
 pub struct Signature(pub(crate) Vec<u8>);
 
+#[allow(clippy::len_without_is_empty)]
 impl Signature {
 	/// Initialize compressed signature from a byte slice.
 	pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
@@ -252,7 +296,14 @@ impl TryFrom<&[u8]> for Signature {
 	}
 }
 
+impl core::fmt::Debug for Signature {
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+		f.debug_tuple("Signature").field(&const_hex::encode(&self.0)).finish()
+	}
+}
+
 /// Deterministic Falcon-1024 constant-time signature (fixed-size).
+#[derive(Clone, Copy, Eq, PartialEq)]
 pub struct CtSignature(pub(crate) [u8; FALCON_DET1024_SIG_CT_SIZE]);
 
 impl CtSignature {
@@ -269,11 +320,6 @@ impl CtSignature {
 		let mut sig = [0u8; FALCON_DET1024_SIG_CT_SIZE];
 		sig.copy_from_slice(bytes);
 		Ok(Self(sig))
-	}
-
-	/// Returns the number of bytes in the signature, also referred to as its ‘length’.
-	pub const fn len(&self) -> usize {
-		FALCON_DET1024_SIG_CT_SIZE
 	}
 
 	/// Returns the salt version of a signature.
@@ -314,17 +360,9 @@ impl TryFrom<Signature> for CtSignature {
 	}
 }
 
-#[cfg(feature = "signature")]
-impl signature::Verifier<Signature> for VerifyingKey {
-	fn verify(&self, msg: &[u8], signature: &Signature) -> Result<(), signature::Error> {
-		Self::verify_compressed(self, msg, signature).map_err(|_| signature::Error::new())
-	}
-}
-
-#[cfg(feature = "signature")]
-impl signature::Verifier<CtSignature> for VerifyingKey {
-	fn verify(&self, msg: &[u8], signature: &CtSignature) -> Result<(), signature::Error> {
-		Self::verify_ct(self, msg, signature).map_err(|_| signature::Error::new())
+impl core::fmt::Debug for CtSignature {
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+		f.debug_tuple("CtSignature").field(&const_hex::encode(self.0)).finish()
 	}
 }
 
