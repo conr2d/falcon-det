@@ -26,6 +26,8 @@ pub mod aux;
 pub mod det1024;
 pub mod error;
 pub mod shake256;
+#[cfg(test)]
+mod tests;
 
 #[doc(hidden)]
 pub use error::Error;

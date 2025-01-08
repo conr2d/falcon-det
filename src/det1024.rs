@@ -24,6 +24,8 @@ pub const FALCON_DET1024_SIG_COMPRESSED_MAXSIZE: usize =
 	falcon_sig_compressed_maxsize(FALCON_DET1024_LOGN) - 40 + 1;
 pub const FALCON_DET1024_SIG_CT_SIZE: usize = falcon_sig_ct_size(FALCON_DET1024_LOGN) - 40 + 1;
 
+pub const FALCON_DET1024_CURRENT_SALT_VERSION: i32 = 0;
+
 const_assert_eq!(FALCON_DET1024_PUBKEY_SIZE, 1793);
 const_assert_eq!(FALCON_DET1024_PRIVKEY_SIZE, 2305);
 const_assert_eq!(FALCON_DET1024_SIG_COMPRESSED_MAXSIZE, 1423);
@@ -263,6 +265,14 @@ pub struct Signature(pub(crate) Vec<u8>);
 
 #[allow(clippy::len_without_is_empty)]
 impl Signature {
+	/// Initialize compressed signature from a vector of bytes.
+	pub fn from_vec(bytes: Vec<u8>) -> Result<Self, Error> {
+		if bytes.len() > FALCON_DET1024_SIG_COMPRESSED_MAXSIZE {
+			return Err(Error::Size);
+		}
+		Ok(Self(bytes))
+	}
+
 	/// Initialize compressed signature from a byte slice.
 	pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
 		if bytes.len() > FALCON_DET1024_SIG_COMPRESSED_MAXSIZE {
@@ -363,20 +373,5 @@ impl TryFrom<Signature> for CtSignature {
 impl core::fmt::Debug for CtSignature {
 	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
 		f.debug_tuple("CtSignature").field(&const_hex::encode(self.0)).finish()
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-	use signature::{Signer, Verifier};
-
-	#[test]
-	fn test_det1024() {
-		let mut rng = Shake256Context::new_prng_from_system().expect("RNG failed");
-		let (sk, vk) = generate_keypair(&mut rng).expect("Keygen failed");
-		let msg = b"hello, world!";
-		let sig = sk.try_sign(msg).expect("Sign failed");
-		assert!(vk.verify(msg, &sig).is_ok());
 	}
 }
