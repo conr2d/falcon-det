@@ -55,7 +55,7 @@ pub struct SigningKey(pub(crate) [u8; FALCON_DET1024_PRIVKEY_SIZE]);
 impl SigningKey {
 	/// Initialize signing key from a byte array.
 	pub const fn from_bytes(bytes: [u8; FALCON_DET1024_PRIVKEY_SIZE]) -> Self {
-		SigningKey(bytes)
+		Self(bytes)
 	}
 
 	/// Initialize signing key from a byte slice.
@@ -65,7 +65,7 @@ impl SigningKey {
 		}
 		let mut key = [0u8; FALCON_DET1024_PRIVKEY_SIZE];
 		key.copy_from_slice(bytes);
-		Ok(SigningKey(key))
+		Ok(Self(key))
 	}
 
 	/// Get the [`VerifyingKey`] which corresponds to this [`SigningKey`].
@@ -120,6 +120,14 @@ impl SigningKey {
 	}
 }
 
+impl TryFrom<&[u8]> for SigningKey {
+	type Error = Error;
+
+	fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
+		Self::from_slice(bytes)
+	}
+}
+
 #[cfg(feature = "signature")]
 impl signature::Signer<Signature> for SigningKey {
 	fn try_sign(&self, msg: &[u8]) -> Result<Signature, signature::Error> {
@@ -132,6 +140,21 @@ impl signature::Signer<Signature> for SigningKey {
 pub struct VerifyingKey(pub(crate) [u8; FALCON_DET1024_PUBKEY_SIZE]);
 
 impl VerifyingKey {
+	/// Initialize verifying key from a byte array.
+	pub const fn from_bytes(bytes: [u8; FALCON_DET1024_PUBKEY_SIZE]) -> Self {
+		Self(bytes)
+	}
+
+	/// Initialize verifying key from a byte slice.
+	pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
+		if bytes.len() != FALCON_DET1024_PUBKEY_SIZE {
+			return Err(Error::Size);
+		}
+		let mut key = [0u8; FALCON_DET1024_PUBKEY_SIZE];
+		key.copy_from_slice(bytes);
+		Ok(Self(key))
+	}
+
 	/// Verify the compressed-format, deterministic-mode (det1024)
 	/// signature provided in `signature` with respect to this verifying
 	/// key and the data provided in `msg`.
@@ -183,11 +206,27 @@ impl AsRef<[u8]> for VerifyingKey {
 	}
 }
 
+impl TryFrom<&[u8]> for VerifyingKey {
+	type Error = Error;
+
+	fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
+		Self::from_slice(bytes)
+	}
+}
+
 /// Deterministic Falcon-1024 compressed signature (variable-length).
 #[derive(Clone, Eq, PartialEq)]
 pub struct Signature(pub(crate) Vec<u8>);
 
 impl Signature {
+	/// Initialize compressed signature from a byte slice.
+	pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
+		if bytes.len() > FALCON_DET1024_SIG_COMPRESSED_MAXSIZE {
+			return Err(Error::Size);
+		}
+		Ok(Self(bytes.to_vec()))
+	}
+
 	/// Returns the number of bytes in the signature, also referred to as its ‘length’.
 	pub fn len(&self) -> usize {
 		self.0.len()
@@ -205,10 +244,33 @@ impl AsRef<[u8]> for Signature {
 	}
 }
 
+impl TryFrom<&[u8]> for Signature {
+	type Error = Error;
+
+	fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
+		Self::from_slice(bytes)
+	}
+}
+
 /// Deterministic Falcon-1024 constant-time signature (fixed-size).
 pub struct CtSignature(pub(crate) [u8; FALCON_DET1024_SIG_CT_SIZE]);
 
 impl CtSignature {
+	/// Initialize constant-time signature from a byte array.
+	pub const fn from_bytes(bytes: [u8; FALCON_DET1024_SIG_CT_SIZE]) -> Self {
+		Self(bytes)
+	}
+
+	/// Initialize constant-time signature from a byte slice.
+	pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
+		if bytes.len() != FALCON_DET1024_SIG_CT_SIZE {
+			return Err(Error::Size);
+		}
+		let mut sig = [0u8; FALCON_DET1024_SIG_CT_SIZE];
+		sig.copy_from_slice(bytes);
+		Ok(Self(sig))
+	}
+
 	/// Returns the number of bytes in the signature, also referred to as its ‘length’.
 	pub const fn len(&self) -> usize {
 		FALCON_DET1024_SIG_CT_SIZE
@@ -217,6 +279,20 @@ impl CtSignature {
 	/// Returns the salt version of a signature.
 	pub fn salt_version(&self) -> i32 {
 		unsafe { sys::falcon_det1024_get_salt_version(self.0.as_ptr() as *const _) }
+	}
+}
+
+impl AsRef<[u8]> for CtSignature {
+	fn as_ref(&self) -> &[u8] {
+		&self.0
+	}
+}
+
+impl TryFrom<&[u8]> for CtSignature {
+	type Error = Error;
+
+	fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
+		Self::from_slice(bytes)
 	}
 }
 
