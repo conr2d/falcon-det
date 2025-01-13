@@ -10,7 +10,6 @@
 //! Deterministic Falcon-1024 signature scheme.
 
 use crate::{aux::*, shake256::Shake256Context, Error};
-use static_assertions::const_assert_eq;
 use subtle::{Choice, ConstantTimeEq};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
@@ -26,10 +25,16 @@ pub const FALCON_DET1024_SIG_CT_SIZE: usize = falcon_sig_ct_size(FALCON_DET1024_
 
 pub const FALCON_DET1024_CURRENT_SALT_VERSION: i32 = 0;
 
-const_assert_eq!(FALCON_DET1024_PUBKEY_SIZE, 1793);
-const_assert_eq!(FALCON_DET1024_PRIVKEY_SIZE, 2305);
-const_assert_eq!(FALCON_DET1024_SIG_COMPRESSED_MAXSIZE, 1423);
-const_assert_eq!(FALCON_DET1024_SIG_CT_SIZE, 1538);
+#[cfg(test)]
+mod validation {
+	use super::*;
+	use static_assertions::const_assert_eq;
+
+	const_assert_eq!(FALCON_DET1024_PUBKEY_SIZE, 1793);
+	const_assert_eq!(FALCON_DET1024_PRIVKEY_SIZE, 2305);
+	const_assert_eq!(FALCON_DET1024_SIG_COMPRESSED_MAXSIZE, 1423);
+	const_assert_eq!(FALCON_DET1024_SIG_CT_SIZE, 1538);
+}
 
 /// Generate a keypair (for Falcon parameter n=1024).
 ///
