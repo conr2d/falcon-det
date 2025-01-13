@@ -38,7 +38,7 @@ impl Default for Shake256Context {
 
 impl Shake256Context {
 	/// Initialize a SHAKE256 context to its initial state. The state is
-	/// then ready to receive data (with [`Shake256Context::inject()`]).
+	/// then ready to receive data (with [`inject`](Shake256Context::inject)).
 	pub fn new() -> Self {
 		let mut ctx = core::mem::MaybeUninit::<sys::shake256_context>::uninit();
 		unsafe {
@@ -85,8 +85,8 @@ impl Shake256Context {
 		}
 	}
 
-	/// Flip the SHAKE256 state to output mode. After this call, [`Shake256Context::inject()`]
-	/// can no longer be called on the context, but [`Shake256Context::extract()`] can be
+	/// Flip the SHAKE256 state to output mode. After this call, [`inject`](Shake256Context::inject)
+	/// can no longer be called on the context, but [`extract`](Shake256Context::extract) can be
 	/// called.
 	///
 	/// Flipping is one-way; a given context can be converted back to input
@@ -99,7 +99,7 @@ impl Shake256Context {
 	}
 
 	/// Extract bytes from the SHAKE256 context ("squeeze" operation). The
-	/// context must have been flipped to output mode (with [`Shake256Context::flip()`]).
+	/// context must have been flipped to output mode (with [`flip`](Shake256Context::flip)).
 	/// Arbitrary amounts of data can be extracted, in one or several calls
 	/// to this function.
 	pub fn extract_into(&mut self, out: &mut [u8]) {
@@ -109,7 +109,7 @@ impl Shake256Context {
 	}
 
 	/// Extract bytes from the SHAKE256 context ("squeeze" operation). The
-	/// context must have been flipped to output mode (with [`Shake256Context::flip()`]).
+	/// context must have been flipped to output mode (with [`flip`](Shake256Context::flip)).
 	/// Arbitrary amounts of data can be extracted, in one or several calls
 	/// to this function.
 	pub fn extract(&mut self, len: usize) -> Vec<u8> {
