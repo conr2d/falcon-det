@@ -35,8 +35,8 @@ const_assert_eq!(FALCON_DET1024_SIG_CT_SIZE, 1538);
 ///
 /// The source of randomness is the provided SHAKE256 context `rng`,
 /// which must have been already initialized, seeded, and set to output
-/// mode (see [`Shake256Context::new_prng_from_seed()`] and
-/// [`Shake256Context::new_prng_from_system()`]).
+/// mode (see [`Shake256Context::new_prng_from_seed`] and
+/// [`Shake256Context::new_prng_from_system`]).
 pub fn generate_keypair(rng: &mut Shake256Context) -> Result<(SigningKey, VerifyingKey), Error> {
 	let mut secret = [0u8; FALCON_DET1024_PRIVKEY_SIZE];
 	let mut public = [0u8; FALCON_DET1024_PUBKEY_SIZE];
@@ -189,7 +189,7 @@ impl VerifyingKey {
 	/// This function accepts a strict subset of valid deterministic-mode
 	/// Falcon signatures, namely, only those having n=1024 and
 	/// "compressed" signature format (thus matching the choices
-	/// implemented by [`SigningKey::sign_compressed()`]).
+	/// implemented by [`SigningKey::sign_compressed`]).
 	pub fn verify_compressed(&self, msg: &[u8], signature: &Signature) -> Result<(), Error> {
 		match unsafe {
 			sys::falcon_det1024_verify_compressed(
