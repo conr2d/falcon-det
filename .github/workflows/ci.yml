@@ -6,11 +6,15 @@ on:
       - '**.rs'
       - '**.toml'
       - '**.yml'
+      - '**.c'
+      - '**.h'
   pull_request:
     paths:
       - '**.rs'
       - '**.toml'
       - '**.yml'
+      - '**.c'
+      - '**.h'
 
 env:
   CARGO_TERM_COLOR: always
