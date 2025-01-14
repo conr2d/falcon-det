@@ -7,7 +7,7 @@
 
 #define FALCON_DET1024_TMPSIZE_KEYGEN FALCON_TMPSIZE_KEYGEN(FALCON_DET1024_LOGN)
 #define FALCON_DET1024_TMPSIZE_SIGNDYN FALCON_TMPSIZE_SIGNDYN(FALCON_DET1024_LOGN)
-#define FALCON_DET1024_TMPSIZE_VERIFY FALCON_TMPSIZE_VERIFY(FALCON_DET1024_LOGN) 
+#define FALCON_DET1024_TMPSIZE_VERIFY FALCON_TMPSIZE_VERIFY(FALCON_DET1024_LOGN)
 #define FALCON_DET1024_SALTED_SIG_COMPRESSED_MAXSIZE FALCON_SIG_COMPRESSED_MAXSIZE(FALCON_DET1024_LOGN)
 #define FALCON_DET1024_SALTED_SIG_CT_SIZE FALCON_SIG_CT_SIZE(FALCON_DET1024_LOGN)
 
@@ -32,7 +32,7 @@ void falcon_det1024_write_salt(uint8_t dst[40], uint8_t salt_version) {
 }
 
 int falcon_det1024_sign_compressed(void *sig, size_t *sig_len,
-        const void *privkey, const void *data, size_t data_len) {
+	const void *privkey, const void *data, size_t data_len) {
 
 	shake256_context detrng;
 	shake256_context hd;
@@ -68,7 +68,7 @@ int falcon_det1024_sign_compressed(void *sig, size_t *sig_len,
 		return r;
 	}
 
-        // Transform the salted signature to unsalted format.
+	// Transform the salted signature to unsalted format.
 	uint8_t *sigbytes = sig;
 	sigbytes[0] = saltedsig[0] | 0x80;
 	sigbytes[1] = FALCON_DET1024_CURRENT_SALT_VERSION;
@@ -80,7 +80,7 @@ int falcon_det1024_sign_compressed(void *sig, size_t *sig_len,
 }
 
 int falcon_det1024_convert_compressed_to_ct(void *sig_ct,
-        const void *sig_compressed, size_t sig_compressed_len) {
+	const void *sig_compressed, size_t sig_compressed_len) {
 
 	int16_t coeffs[1 << FALCON_DET1024_LOGN];
 	size_t v;
@@ -89,7 +89,7 @@ int falcon_det1024_convert_compressed_to_ct(void *sig_ct,
 		return FALCON_ERR_BADSIG;
 	}
 
-        // Decode signature's s_bytes into 1024 signed-integer coefficients.
+	// Decode signature's s_bytes into 1024 signed-integer coefficients.
 	v = Zf(comp_decode)(coeffs, FALCON_DET1024_LOGN, ((uint8_t*)sig_compressed)+2, sig_compressed_len-2);
 	if (v == 0) {
 		return FALCON_ERR_SIZE;
@@ -99,7 +99,7 @@ int falcon_det1024_convert_compressed_to_ct(void *sig_ct,
 	sig[0] = FALCON_DET1024_SIG_CT_HEADER;
 	sig[1] = ((uint8_t*)sig_compressed)[1]; // Copy the salt_version byte.
 
-        // Encode the signed-integer coefficients into CT format.
+	// Encode the signed-integer coefficients into CT format.
 	v = Zf(trim_i16_encode)(sig+2, FALCON_DET1024_SIG_CT_SIZE-2, coeffs, FALCON_DET1024_LOGN,
 		Zf(max_sig_bits)[FALCON_DET1024_LOGN]);
 	if (v == 0) {
@@ -111,7 +111,7 @@ int falcon_det1024_convert_compressed_to_ct(void *sig_ct,
 
 // Construct the corresponding salted signature from an unsalted one.
 void falcon_det1024_resalt(uint8_t *salted_sig,
-        const uint8_t *unsalted_sig, size_t unsalted_sig_len) {
+	const uint8_t *unsalted_sig, size_t unsalted_sig_len) {
 
 	salted_sig[0] = unsalted_sig[0] & ~0x80; // Reset MSB to 0.
 	falcon_det1024_write_salt(salted_sig+1, unsalted_sig[1]);
@@ -119,7 +119,7 @@ void falcon_det1024_resalt(uint8_t *salted_sig,
 }
 
 int falcon_det1024_verify_compressed(const void *sig, size_t sig_len,
-        const void *pubkey, const void *data, size_t data_len) {
+	const void *pubkey, const void *data, size_t data_len) {
 
 	uint8_t tmpvv[FALCON_DET1024_TMPSIZE_VERIFY];
 	uint8_t salted_sig[FALCON_DET1024_SALTED_SIG_COMPRESSED_MAXSIZE];
@@ -148,7 +148,7 @@ int falcon_det1024_verify_compressed(const void *sig, size_t sig_len,
 }
 
 int falcon_det1024_verify_ct(const void *sig,
-        const void *pubkey, const void *data, size_t data_len) {
+	const void *pubkey, const void *data, size_t data_len) {
 
 	uint8_t tmpvv[FALCON_DET1024_TMPSIZE_VERIFY];
 	uint8_t salted_sig[FALCON_DET1024_SALTED_SIG_CT_SIZE];
