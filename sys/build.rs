@@ -10,19 +10,19 @@
 use std::{env, path::PathBuf};
 
 fn main() {
-	let dst = cmake::Config::new("falcon").build();
+    let dst = cmake::Config::new("falcon").build();
 
-	println!("cargo:rustc-link-search=native={}/build", dst.display());
-	println!("cargo:rustc-link-lib=static=falcon_det");
+    println!("cargo:rustc-link-search=native={}/build", dst.display());
+    println!("cargo:rustc-link-lib=static=falcon_det");
 
-	let bindings = bindgen::Builder::default()
-		.header("falcon/include/falcon_det.h")
-		.parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
-		.generate()
-		.expect("Unable to generate bindings");
+    let bindings = bindgen::Builder::default()
+        .header("falcon/include/falcon_det.h")
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+        .generate()
+        .expect("Unable to generate bindings");
 
-	let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-	bindings
-		.write_to_file(out_path.join("bindings.rs"))
-		.expect("Couldn't write bindings!");
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    bindings
+        .write_to_file(out_path.join("bindings.rs"))
+        .expect("Couldn't write bindings!");
 }
